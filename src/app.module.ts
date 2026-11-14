@@ -11,6 +11,7 @@ import { AuthModule } from './auth/auth.module';
 import { BannersModule } from './banners/banners.module';
 import { BillingModule } from './billing/billing.module';
 import { CatalogModule } from './catalog/catalog.module';
+import { ContentModule } from './content/content.module';
 import { JwtAuthGuard } from './common/jwt-auth.guard';
 import { RolesGuard } from './common/roles.guard';
 import { CoursesModule } from './courses/courses.module';
@@ -34,6 +35,7 @@ import { UsersModule } from './users/users.module';
     UsersModule,
     NotificationsModule,
     CatalogModule,
+    ContentModule,
     LearningModule,
     ReviewsModule,
     AssessmentsModule,

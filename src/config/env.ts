@@ -24,6 +24,8 @@ export type AppEnv = {
   openaiTtsModel: string;
   openaiGuideVoice: string;
   openaiStudentVoice: string;
+  contentApiUrl: string;
+  contentApiKey: string;
 };
 
 const DEV_ACCESS = 'dev-access-secret-change-me';
@@ -79,5 +81,10 @@ export function readEnv(source: NodeJS.ProcessEnv = process.env): AppEnv {
     openaiTtsModel: source.OPENAI_TTS_MODEL ?? 'tts-1-hd',
     openaiGuideVoice: source.OPENAI_GUIDE_VOICE ?? 'alloy',
     openaiStudentVoice: source.OPENAI_STUDENT_VOICE ?? 'nova',
+    contentApiUrl: (source.IBRARY_CONTENT_API_URL ?? 'https://ibrary-content-api-latest.onrender.com').replace(
+      /\/$/,
+      '',
+    ),
+    contentApiKey: source.IBRARY_CONTENT_API_KEY ?? '',
   };
 }

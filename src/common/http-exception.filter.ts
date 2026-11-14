@@ -31,6 +31,11 @@ export class HttpExceptionFilter implements ExceptionFilter {
           ? (raw as { message: string | string[] }).message
           : 'Internal server error';
 
+    const detail =
+      raw && typeof raw === 'object'
+        ? (raw as { api?: string; token?: string })
+        : undefined;
+
     if (status >= 500) {
       this.logger.error(exception);
     }
@@ -40,6 +45,8 @@ export class HttpExceptionFilter implements ExceptionFilter {
       message,
       path: request.url,
       timestamp: new Date().toISOString(),
+      ...(detail?.api ? { api: detail.api } : {}),
+      ...(typeof detail?.token === 'string' ? { token: detail.token } : {}),
     });
   }
 }

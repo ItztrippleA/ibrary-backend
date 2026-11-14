@@ -14,7 +14,7 @@ export class HealthController {
   @ApiOperation({
     summary: 'Process and dependency health',
     description:
-      'Reports whether Postgres answers, and whether Google, Resend, and Paystack keys are present. Secrets are not returned.',
+      'Reports whether Postgres answers, and whether Google, Resend, Paystack, and the content API key are present. Secrets are not returned.',
   })
   async check() {
     const env = readEnv();
@@ -31,6 +31,7 @@ export class HealthController {
         google: Boolean(env.googleClientId),
         resend: Boolean(env.resendApiKey),
         paystack: Boolean(env.paystackSecretKey),
+        content: Boolean(env.contentApiKey),
       },
       docs: `${env.appUrl}/docs`,
     };

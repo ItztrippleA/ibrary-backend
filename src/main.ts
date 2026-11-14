@@ -64,6 +64,7 @@ async function bootstrap() {
     .addTag('users', 'Profile, class level, and class path')
     .addTag('assessments', 'Onboarding and later assessments')
     .addTag('catalog', 'Terms, subjects, search, and classmates')
+    .addTag('content', 'Published classes, topics, subtopics, summaries, and lesson content')
     .addTag('learning', 'Home, progress, activity, and favourites')
     .addTag('reviews', 'Subject ratings')
     .addTag('gamification', 'Points, leadership board, badges, incentives')
