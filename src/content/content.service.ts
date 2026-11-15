@@ -150,6 +150,18 @@ export class ContentService {
 
   private async buildCatalog(): Promise<PublishedCatalog> {
     const classes = new Map<string, Map<string, Map<number, PublishedTopic[]>>>();
+    // Render can sleep ~50s. One wake call up front so the scan below is not
+    // charged a cold start on every empty subject/theme combo.
+    try {
+      await this.listTopics({
+        className: 'SS1',
+        apiClassName: 'SSS 1',
+        subject: 'Biology',
+        themeNumber: 1,
+      });
+    } catch {
+      // Still try the scan; individual misses are skipped below.
+    }
     for (const { label, api } of CONTENT_CLASSES) {
       for (const subject of SUBJECTS) {
         const themes = subject === 'Biology' ? THEMES : [1];
@@ -161,16 +173,25 @@ export class ContentService {
             subject,
             themeNumber,
           };
-          const topics = await this.listTopics(selection);
+          let topics: Awaited<ReturnType<ContentService['listTopics']>> = [];
+          try {
+            topics = await this.listTopics(selection);
+          } catch {
+            continue;
+          }
           if (!topics.length) continue;
           const published = await Promise.all(
             topics.map(async (topic) => {
-              const summary = await this.summaries(topic.topicNumber, {
-                class_name: label,
-                subject,
-                theme_number: themeNumber,
-              });
-              return { ...topic, subtopics: summary.subtopics };
+              try {
+                const summary = await this.summaries(topic.topicNumber, {
+                  class_name: label,
+                  subject,
+                  theme_number: themeNumber,
+                });
+                return { ...topic, subtopics: summary.subtopics };
+              } catch {
+                return { ...topic, subtopics: [] };
+              }
             }),
           );
           const bySubject = classes.get(label) ?? new Map();

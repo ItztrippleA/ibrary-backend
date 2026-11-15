@@ -21,8 +21,10 @@ export class ContentClient {
     if (!env.contentApiKey) {
       throw new ContentUpstreamError(503, 'The content API key is not configured', url.toString(), '');
     }
+    // Render free tier can sit cold for ~50s; leave headroom past that.
+    const TIMEOUT_MS = 90_000;
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 45_000);
+    const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
     try {
       const response = await fetch(url, {
         headers: { 'X-API-Key': env.contentApiKey, Accept: 'application/json' },
@@ -45,7 +47,9 @@ export class ContentClient {
       const aborted = error instanceof Error && error.name === 'AbortError';
       throw new ContentUpstreamError(
         503,
-        aborted ? 'The content API timed out' : 'The content API did not respond',
+        aborted
+          ? 'The content API timed out (it can take up to about a minute to wake)'
+          : 'The content API did not respond',
         url.toString(),
         env.contentApiKey,
       );
