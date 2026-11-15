@@ -21,6 +21,7 @@
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:seed": "tsx prisma/seed.ts",
+    "db:seed:biology-quizzes": "tsx prisma/seed-biology-quizzes.ts",
     "db:setup": "prisma migrate dev && tsx prisma/seed.ts"
   },
   "prisma": {

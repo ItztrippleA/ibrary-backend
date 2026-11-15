@@ -29,6 +29,84 @@ export class AssessmentsService {
     });
   }
 
+  async practiceCatalog(className?: string, subject?: string) {
+    const classLevel = parseClassLevel(className);
+    const rows = await this.prisma.assessment.findMany({
+      where: {
+        onboarding: false,
+        ...(classLevel ? { classLevel } : {}),
+      },
+      orderBy: [{ title: 'asc' }],
+      include: { _count: { select: { questions: true } } },
+    });
+
+    const subjectFilter = subject?.trim().toLowerCase();
+    const topics = rows
+      .map((row) => {
+        const meta = parseAssessmentMeta(row.description, row.slug);
+        return {
+          slug: row.slug,
+          title: row.title,
+          theme: meta.theme,
+          themeNumber: meta.themeNumber,
+          topicNumber: meta.topicNumber,
+          questionCount: row._count.questions,
+          classLevel: row.classLevel,
+          subject: meta.subject,
+        };
+      })
+      .filter((topic) => !subjectFilter || topic.subject.toLowerCase() === subjectFilter)
+      .filter((topic) => topic.questionCount > 0);
+
+    const bySubject = new Map<string, typeof topics>();
+    for (const topic of topics) {
+      const list = bySubject.get(topic.subject) ?? [];
+      list.push(topic);
+      bySubject.set(topic.subject, list);
+    }
+
+    for (const list of bySubject.values()) {
+      list.sort((a, b) => a.themeNumber - b.themeNumber || a.topicNumber - b.topicNumber || a.title.localeCompare(b.title));
+    }
+
+    return {
+      subjects: [...bySubject.entries()]
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([name, subjectTopics]) => ({ subject: name, topics: subjectTopics })),
+    };
+  }
+
+  async practiceQuiz(slug: string) {
+    const assessment = await this.prisma.assessment.findUnique({
+      where: { slug },
+      include: { questions: { orderBy: { order: 'asc' } } },
+    });
+    if (!assessment || assessment.onboarding) {
+      throw new NotFoundException('Quiz not found');
+    }
+
+    const meta = parseAssessmentMeta(assessment.description, assessment.slug);
+    return {
+      slug: assessment.slug,
+      title: assessment.title,
+      subject: meta.subject,
+      theme: meta.theme,
+      themeNumber: meta.themeNumber,
+      topicNumber: meta.topicNumber,
+      classLevel: assessment.classLevel,
+      contentIndex: meta.topicNumber || 0,
+      questions: assessment.questions.map((question) => ({
+        id: question.id,
+        prompt: question.prompt,
+        options: question.options.map((text, index) => ({
+          id: String.fromCharCode(65 + index),
+          text,
+        })),
+        correctOptionId: String.fromCharCode(65 + question.correctIndex),
+      })),
+    };
+  }
+
   async onboarding() {
     const assessment = await this.prisma.assessment.findFirst({
       where: { onboarding: true },
@@ -163,4 +241,30 @@ export class AssessmentsService {
       questions: assessment.questions.map(({ correctIndex: _hidden, ...question }) => question),
     };
   }
+}
+
+function parseClassLevel(value?: string): ClassLevel | undefined {
+  if (!value?.trim()) return undefined;
+  const key = value.trim().toUpperCase().replace(/\s+/g, '');
+  const match = key.match(/^(JSS|SSS|SS)([123])$/);
+  if (!match) return undefined;
+  const prefix = match[1] === 'JSS' ? 'JSS' : 'SS';
+  const level = `${prefix}${match[2]}`;
+  return (Object.values(ClassLevel) as string[]).includes(level) ? (level as ClassLevel) : undefined;
+}
+
+function parseAssessmentMeta(description: string, slug: string) {
+  const parts = description.split(' · ').map((part) => part.trim()).filter(Boolean);
+  const subject = parts[0] && !parts[0].startsWith('WAEC') && !parts[0].startsWith('theme:') ? parts[0] : 'General';
+  const theme =
+    parts.find((part) => !part.startsWith('WAEC') && !part.startsWith('theme:') && part !== subject) ?? '';
+  const themeMeta = parts.find((part) => part.startsWith('theme:')) ?? '';
+  const themeMatch = themeMeta.match(/theme:(\d+)\|topic:(\d+)/);
+  const slugMatch = slug.match(/theme(\d+).*topic(\d+)/i);
+  return {
+    subject,
+    theme,
+    themeNumber: themeMatch ? Number(themeMatch[1]) : slugMatch ? Number(slugMatch[1]) : 0,
+    topicNumber: themeMatch ? Number(themeMatch[2]) : slugMatch ? Number(slugMatch[2]) : 0,
+  };
 }

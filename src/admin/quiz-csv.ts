@@ -24,6 +24,8 @@ export type ParsedQuiz = {
   slug: string;
   title: string;
   theme: string;
+  themeNumber: number | null;
+  topicNumber: number | null;
   classLevel: ClassLevel | null;
   questions: ParsedQuestion[];
 };
@@ -85,10 +87,17 @@ export function parseQuizCsv(csv: string): { quizzes: ParsedQuiz[]; skipped: Ski
       return;
     }
 
+    const themeNumberText = cell(row, 'theme_number');
+    const topicNumberText = cell(row, 'topic_number');
+    const themeNumber = /^\d+$/.test(themeNumberText) ? Number(themeNumberText) : null;
+    const topicNumber = /^\d+$/.test(topicNumberText) ? Number(topicNumberText) : null;
+
     const quiz = groups.get(slug) ?? {
       slug,
       title,
       theme: cell(row, 'theme'),
+      themeNumber,
+      topicNumber,
       classLevel: classFromToken(topicId) ?? classFromToken(cell(row, 'question_id')),
       questions: [],
     };

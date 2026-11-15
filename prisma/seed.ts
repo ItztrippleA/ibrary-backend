@@ -1,5 +1,6 @@
 import { ClassLevel, CourseStatus, PrismaClient, UserRole } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
+import { seedBiologyQuizzes } from './seed-biology-quizzes';
 
 const prisma = new PrismaClient();
 
@@ -216,6 +217,11 @@ async function main() {
       },
     },
   });
+
+  const biologyQuizzes = await seedBiologyQuizzes(prisma);
+  console.log(
+    `Seeded Biology quizzes: ${biologyQuizzes.quizzes} topics, ${biologyQuizzes.questions} questions (skipped ${biologyQuizzes.skipped})`,
+  );
 
   const adminPassword = await bcrypt.hash('Admin123!', 10);
   await prisma.user.upsert({

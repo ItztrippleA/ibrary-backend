@@ -1,7 +1,7 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
+import { ApiBearerAuth, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 import type { User } from '@prisma/client';
-import { CurrentUser } from '../common/decorators';
+import { CurrentUser, Public } from '../common/decorators';
 import { AssessmentsService } from './assessments.service';
 import { SubmitAssessmentDto } from './dto/submit-assessment.dto';
 
@@ -18,6 +18,31 @@ export class AssessmentsController {
   })
   list(@CurrentUser() user: User) {
     return this.assessments.list(user);
+  }
+
+  @Public()
+  @Get('practice')
+  @ApiOperation({
+    summary: 'Practice quiz catalog for Assessment tab',
+    description: 'Grouped by subject. Optional class_name (SS1 / SSS 1) and subject filters.',
+  })
+  @ApiQuery({ name: 'class_name', required: false })
+  @ApiQuery({ name: 'subject', required: false })
+  practiceCatalog(
+    @Query('class_name') className?: string,
+    @Query('subject') subject?: string,
+  ) {
+    return this.assessments.practiceCatalog(className, subject);
+  }
+
+  @Public()
+  @Get('practice/:slug')
+  @ApiOperation({
+    summary: 'One practice quiz with answer key',
+    description: 'Used by the Assessment tab for client-side scoring.',
+  })
+  practiceQuiz(@Param('slug') slug: string) {
+    return this.assessments.practiceQuiz(slug);
   }
 
   @Get('onboarding')
