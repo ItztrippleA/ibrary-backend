@@ -44,13 +44,15 @@ describe('content parse', () => {
     expect(topic.description).toBe('Characteristics of living things');
   });
 
-  it('uses SK as the primary lesson id', () => {
+  it('uses PK+SK as the primary lesson id', () => {
     const summary = presentSummary({
       subtopic: 'Characteristics of living things',
       SK: 'TOPIC#01#CONTENT#0',
       PK: 'same-for-whole-theme',
     });
+    expect(summary.pk).toBe('same-for-whole-theme');
     expect(summary.sk).toBe('TOPIC#01#CONTENT#0');
+    expect(summary.id).toBe('same-for-whole-themeTOPIC#01#CONTENT#0');
     expect(summary.contentIndex).toBe(0);
   });
 
@@ -84,7 +86,9 @@ describe('content parse', () => {
       },
       0,
     );
+    expect(lesson.pk).toBe('');
     expect(lesson.sk).toBe('TOPIC#01#CONTENT#0');
+    expect(lesson.id).toBe('TOPIC#01#CONTENT#0');
     expect(lesson.contentMarkdown).toContain('Recognizing Living Things');
     expect(lesson.keyTakeaways).toEqual(['Living things grow']);
     expect(lesson.accessibilityContext).toBe('captions: required');
@@ -144,9 +148,13 @@ describe('content parse', () => {
       textbook_chunk_refs: '[]',
       curriculum_unit_id: 'bio_sss1_theme1_topic1_content1',
     });
+    expect(first.pk).toBe('b41976e0-6b3d-b14f-aa3f-f4198da06ca1');
+    expect(second.pk).toBe(first.pk);
     expect(first.sk).toBe('TOPIC#01#CONTENT#0');
     expect(second.sk).toBe('TOPIC#01#CONTENT#1');
-    expect(first.sk).not.toBe(second.sk);
+    expect(first.id).toBe(`${first.pk}${first.sk}`);
+    expect(second.id).toBe(`${second.pk}${second.sk}`);
+    expect(first.id).not.toBe(second.id);
     expect(first.contentIndex).toBe(0);
     expect(second.contentIndex).toBe(1);
   });

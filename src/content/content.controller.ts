@@ -46,7 +46,7 @@ export class ContentController {
   @ApiOperation({
     summary: 'Full lessons for a topic',
     description:
-      'Proxies Content API `/topics/{topic_number}/subtopics`. Each row is keyed by `sk` (Dynamo SK, e.g. TOPIC#01#CONTENT#0); PK is shared for the theme.',
+      'Proxies Content API `/topics/{topic_number}/subtopics`. Each row id is `pk` + `sk` (PK shared per theme; SK e.g. TOPIC#01#CONTENT#0).',
   })
   subtopics(@Param('topicNumber', ParseIntPipe) topicNumber: number, @Query() query: ContentQuery) {
     return this.content.subtopics(topicNumber, query);

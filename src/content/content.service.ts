@@ -92,13 +92,13 @@ export class ContentService {
       subject: selection.subject,
       themeNumber: selection.themeNumber,
       topicNumber,
-      subtopics: (body.subtopics ?? []).map(presentSummary).sort((a, b) => a.sk.localeCompare(b.sk)),
+      subtopics: (body.subtopics ?? []).map(presentSummary).sort((a, b) => a.id.localeCompare(b.id)),
     };
   }
 
   async subtopics(topicNumber: number, query: ContentQuery) {
     const selection = this.selection(query);
-    // List lessons for a topic. Rows share PK; SK (TOPIC#NN#CONTENT#M) is the unique id.
+    // List lessons for a topic. Stable id is PK+SK (PK shared per theme).
     const body = await this.read<{ subtopics?: Record<string, unknown>[] }>(
       `/v2/topics/${topicNumber}/subtopics`,
       selection,
@@ -110,7 +110,7 @@ export class ContentService {
       topicNumber,
       subtopics: (body.subtopics ?? [])
         .map((item) => presentLesson(item))
-        .sort((a, b) => a.sk.localeCompare(b.sk)),
+        .sort((a, b) => a.id.localeCompare(b.id)),
     };
   }
 

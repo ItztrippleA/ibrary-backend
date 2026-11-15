@@ -125,7 +125,6 @@ export function presentTopic(item: Record<string, unknown>) {
   };
 }
 
-/** Stable lesson id: SK is unique per row; PK is shared across a theme. */
 export function skFromItem(item: Record<string, unknown>): string {
   const sk = String(item.SK ?? '').trim();
   if (sk) return sk;
@@ -135,10 +134,24 @@ export function skFromItem(item: Record<string, unknown>): string {
   return `TOPIC#${topicPart}#CONTENT#${index}`;
 }
 
+export function pkFromItem(item: Record<string, unknown>): string {
+  return String(item.PK ?? '').trim();
+}
+
+/** Primary id = PK + SK (PK is shared per theme; SK differentiates the row). */
+export function contentIdFromItem(item: Record<string, unknown>): string {
+  const pk = pkFromItem(item);
+  const sk = skFromItem(item);
+  return pk ? `${pk}${sk}` : sk;
+}
+
 export function presentSummary(item: Record<string, unknown>) {
+  const pk = pkFromItem(item);
   const sk = skFromItem(item);
   const fromSk = contentIndexFromSk(sk);
   return {
+    id: contentIdFromItem(item),
+    pk,
     sk,
     contentIndex: Number.isFinite(fromSk) ? fromSk : contentIndexFromItem(item),
     title: String(item.subtopic ?? 'Lesson'),
@@ -146,6 +159,7 @@ export function presentSummary(item: Record<string, unknown>) {
 }
 
 export function presentLesson(item: Record<string, unknown>, contentIndex?: number) {
+  const pk = pkFromItem(item);
   const sk = skFromItem(item);
   const fromSk = contentIndexFromSk(sk);
   const index = Number.isFinite(contentIndex)
@@ -154,6 +168,8 @@ export function presentLesson(item: Record<string, unknown>, contentIndex?: numb
       ? fromSk
       : contentIndexFromItem(item);
   return {
+    id: contentIdFromItem(item),
+    pk,
     sk,
     contentIndex: index,
     title: String(item.subtopic ?? 'Lesson'),
