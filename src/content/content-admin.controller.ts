@@ -43,6 +43,7 @@ export class ContentAdminController {
   }
 
   @Get('topics/:topicNumber/subtopics/:contentIndex')
+  // Proxies Content API get_subtopic (v2) — markdown, takeaways, glossary, activities, images.
   @ApiOperation({ summary: 'One published lesson' })
   lesson(
     @Param('topicNumber', ParseIntPipe) topicNumber: number,

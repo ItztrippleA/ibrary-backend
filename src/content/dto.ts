@@ -3,7 +3,10 @@ import { Type } from 'class-transformer';
 import { IsInt, IsOptional, IsString, Min } from 'class-validator';
 
 export class ContentQuery {
-  @ApiPropertyOptional({ example: 'SS1', description: 'Nigerian curriculum class, as stored in the content API (SS1–SS3)' })
+  @ApiPropertyOptional({
+    example: 'SS1',
+    description: 'App class label SS1–SS3. Mapped to content API values SSS 1–SSS 3.',
+  })
   @IsOptional()
   @IsString()
   class_name?: string;

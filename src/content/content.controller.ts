@@ -43,14 +43,22 @@ export class ContentController {
 
   @Public()
   @Get('topics/:topicNumber/subtopics')
-  @ApiOperation({ summary: 'Full lessons for a topic' })
+  @ApiOperation({
+    summary: 'Full lessons for a topic',
+    description:
+      'Proxies Content API `/topics/{topic_number}/subtopics`. Each row is keyed by `sk` (Dynamo SK, e.g. TOPIC#01#CONTENT#0); PK is shared for the theme.',
+  })
   subtopics(@Param('topicNumber', ParseIntPipe) topicNumber: number, @Query() query: ContentQuery) {
     return this.content.subtopics(topicNumber, query);
   }
 
   @Public()
   @Get('topics/:topicNumber/subtopics/:contentIndex')
-  @ApiOperation({ summary: 'One lesson, with markdown and parsed JSON fields' })
+  @ApiOperation({
+    summary: 'One lesson (Content API get_subtopic)',
+    description:
+      'Proxies `/v2/topics/{topic_number}/subtopics/{content_index}`. Returns markdown, takeaways, glossary, activities, accessibility notes, and public figure URLs. `content_index` matches CONTENT#{N} / `_content{N}` in the unit id.',
+  })
   lesson(
     @Param('topicNumber', ParseIntPipe) topicNumber: number,
     @Param('contentIndex', ParseIntPipe) contentIndex: number,
