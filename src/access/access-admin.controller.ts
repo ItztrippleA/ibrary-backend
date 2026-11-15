@@ -1,4 +1,12 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { UserRole } from '@prisma/client';
 import { Roles } from '../common/decorators';
@@ -17,7 +25,10 @@ export class AccessAdminController {
   constructor(private readonly access: AccessService) {}
 
   @Get()
-  @ApiOperation({ summary: 'Tools, voice commands, sign phrases, and how many students use each setting' })
+  @ApiOperation({
+    summary:
+      'Tools, voice commands, sign phrases, and how many students use each setting',
+  })
   async desk() {
     const [tools, commands, signs, usage] = await Promise.all([
       this.access.tools(),
